@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Time Capsule Wall</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f5f5f5;
+    }
+    h1 {
+      margin: 20px;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(100, 10px);
+      grid-template-rows: repeat(100, 10px);
+      gap: 1px;
+      background: #ccc;
+    }
+    .cell {
+      width: 10px;
+      height: 10px;
+      background: white;
+      font-size: 7px;
+      text-align: center;
+      line-height: 10px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .cell:hover {
+      background: lightblue;
+    }
+    .cell.taken {
+      background: #333;
+      color: white;
+    }
+    #info {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 Digital Time Capsule Wall</h1>
+  <div id="grid"></div>
+  <div id="info">
+    <p>Click on any empty square to claim your spot in history for $1.</p>
+    <p>Submit your emoji/message via our <a href="https://forms.gle/YOUR_FORM_LINK" target="_blank">submission form</a>.</p>
+    <p>Send payment to <a href="https://paypal.me/YOUR_PAYPAL" target="_blank">PayPal</a>.</p>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const totalSquares = 10000;
+
+    async function loadCapsuleData() {
+      const res = await fetch("capsule.json");
+      const data = await res.json();
+      return data;
+    }
+
+    function createCell(i, dataMap) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      const entry = dataMap.get(i);
+      if (entry) {
+        cell.classList.add("taken");
+        cell.textContent = entry.emoji || "✍️";
+        cell.title = `${entry.name}: ${entry.caption}`;
+        cell.onclick = () => window.open(entry.link, '_blank');
+      } else {
+        cell.onclick = () => {
+          alert(`You clicked square #${i + 1}. To claim it:\n1. Fill out the form.\n2. Send $1 via PayPal.\n3. We will post your message.`);
+        };
+      }
+      return cell;
+    }
+
+    async function buildGrid() {
+      const data = await loadCapsuleData();
+      const dataMap = new Map();
+      data.forEach(entry => dataMap.set(entry.id, entry));
+
+      for (let i = 0; i < totalSquares; i++) {
+        const cell = createCell(i, dataMap);
+        grid.appendChild(cell);
+      }
+    }
+
+    buildGrid();
+  </script>
+</body>
+</html>
